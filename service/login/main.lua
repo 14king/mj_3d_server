@@ -1,28 +1,27 @@
 local skynet = require "skynet"
 require "skynet.manager"
-local db = require "db"
-
 
 local CMD = {}
 
 function CMD.start()
-    db:init()
 end
 
-function CMD.load_all_account()
-    local ret = db:find_all("account")
-    return ret
+function CMD.register(msg)
+    return skynet.call("player_mgr", "lua", "register", msg)
 end
 
-function CMD.new_account(info)
-    db:insert("account", info)
+function CMD.login(msg)
+    return skynet.call("player_mgr", "lua", "login", msg)
 end
+
 
 skynet.start(function ()
-    skynet.register("mongo")
+    skynet.register("login")
+
     skynet.dispatch("lua", function (_, session, cmd, ...)
         local f = CMD[cmd]
         if not f then
+            skynet.error("unknow cmd "..cmd)
             return
         end
 
@@ -33,4 +32,3 @@ skynet.start(function ()
         end
     end)
 end)
-

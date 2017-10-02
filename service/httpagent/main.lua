@@ -30,20 +30,16 @@ local function handle(id, addr)
     end
     local path, query = urllib.parse(url)
     table.insert(tmp, string.format("path: %s", path))
-    if query then
-        local q = urllib.parse_query(query)
-        for k, v in pairs(q) do
-            table.insert(tmp, string.format("query: %s= %s", k,v))
-        end
+    if #path <= 1 or not query then
+        return
     end
-    table.insert(tmp, "-----header----")
-    for k,v in pairs(header) do
-        table.insert(tmp, string.format("%s = %s",k,v))
-    end
-    table.insert(tmp, "-----body----\n" .. body)
-    print(path, query)
+
+    local q = urllib.parse_query(query)
     local f = handler[string.sub(path,2)]
-    local ret = f(tmp)
+    if not f then
+        return
+    end
+    local ret = f(q)
     if ret then
         response(id, code, cjson.encode(ret))
     end
